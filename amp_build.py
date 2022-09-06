@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import shutil
+import amp_hook_pre
 
 def main():
     parser = argparse.ArgumentParser()    
@@ -30,15 +31,12 @@ def main():
         exit(1)
 
     try:
-        new_package = create_package(Path(args.destination), None,
-                                        metadata={'name': 'tomcat', 
-                                                  'version': "9.0.65", # use value from amp_hook_pre
-                                                  'install_path': 'tomcat'},
-                                        # install all of the hooks, just to show how it's done
-                                        hooks={'pre': 'amp_hook_pre.py',                                             
-                                               'config': 'amp_hook_config.py',
-                                               'start': 'amp_hook_start.py',
-                                               'stop': 'amp_hook_stop.py'})
+        new_package = create_package("tomcat", amp_hook_pre.tomcat_download_version, "tomcat",
+                                     Path(args.destination), None,
+                                     hooks={'pre': 'amp_hook_pre.py',                                             
+                                            'config': 'amp_hook_config.py',
+                                            'start': 'amp_hook_start.py',
+                                            'stop': 'amp_hook_stop.py'})
 
         logging.info(f"New package in {new_package}")    
     except Exception as e:
