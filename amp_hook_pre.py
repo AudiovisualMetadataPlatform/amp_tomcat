@@ -9,11 +9,12 @@ import urllib.request
 import tarfile
 import shutil
 import os
+from time import strftime
 
 # We need to use one of the 9.x since 10.x changed the package names for the EE
 # stuff and it breaks code
 tomcat_download_url_base = "https://archive.apache.org/dist/tomcat/tomcat-9/"
-tomcat_download_version = "9.0.65"
+tomcat_download_version = "9.0.106"
 
 
 def main():
@@ -26,10 +27,15 @@ def main():
 
     amp_root = Path(os.environ['AMP_ROOT'])
 
+    old_tomcat = None
     if (amp_root / "tomcat/webapps").exists():
-        logging.warning("Skipping tomcat download: Tomcat package may already be installed.")
-        exit(0)
-        
+        # there's already a tomcat here.  Let's move the directory somewhere else
+        # and restore the webapps directory later.
+        old_tomcat = f"tomcat-{strftime('%Y%m%d-%H%M%S')}"
+        logging.warning(f"Tomcat webapps already exists, upgrading.  Original in {old_tomcat}")
+        (amp_root / "tomcat").rename(amp_root / old_tomcat)
+
+
     # Install a tomcat.  Specifically we're going with tomcat 9.0.x
     # which is the latest as of this release.  Tomcat 10 changes the
     # servlet namespace and is incompatible with what we're running
@@ -40,8 +46,10 @@ def main():
         t.extractall(amp_root)
     (amp_root / f"apache-tomcat-{tomcat_download_version}").rename(amp_root / "tomcat")
     shutil.rmtree(amp_root / 'tomcat/webapps')
-    (amp_root / 'tomcat/webapps').mkdir()
-
+    if old_tomcat is None:
+        (amp_root / 'tomcat/webapps').mkdir()
+    else:
+        shutil.copytree(amp_root / old_tomcat / "webapps", amp_root / "tomcat/webapps")
 
 
 if __name__ == "__main__":
