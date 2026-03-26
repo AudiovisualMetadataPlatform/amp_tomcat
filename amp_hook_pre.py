@@ -14,7 +14,7 @@ from time import strftime
 # We need to use one of the 9.x since 10.x changed the package names for the EE
 # stuff and it breaks code
 tomcat_download_url_base = "https://archive.apache.org/dist/tomcat/tomcat-9/"
-tomcat_download_version = "9.0.106"
+tomcat_download_version = "9.0.116"
 
 
 def main():
